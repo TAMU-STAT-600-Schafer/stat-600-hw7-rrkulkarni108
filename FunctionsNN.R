@@ -7,10 +7,13 @@
 # seed - specified seed to use before random normal draws
 initialize_bw <- function(p, hidden_p, K, scale = 1e-3, seed = 12345){
   # [ToDo] Initialize intercepts as zeros
-  
+  b1 = rep(0, hidden_p) #initialize b1
+  b2 = 0                #initialize b2
   # [ToDo] Initialize weights by drawing them iid from Normal
   # with mean zero and scale as sd
-  
+  set.seed(seed) #set the seed
+  W1 <- scale * matrix(rnorm(p * hidden_p), nrow = p, ncol = hidden_p) #initialize weights1
+  W2 <- scale * matrix(rnorm(hidden_p * K), nrow = hidden_p, ncol = K) #initialize weights2
   # Return
   return(list(b1 = b1, b2 = b2, W1 = W1, W2 = W2))
 }
