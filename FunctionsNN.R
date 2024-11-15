@@ -26,16 +26,31 @@ initialize_bw <- function(p, hidden_p, K, scale = 1e-3, seed = 12345){
 # K - number of classes
 loss_grad_scores <- function(y, scores, K){
   
-  # [ToDo] Calculate loss when lambda = 0
-  # loss = ...
+  # y is indicator matrix of class labels
+  n <- length(y)
+  y_indicator <- matrix(0, nrow = n, ncol = K)
+  for (i in 1:n) {
+    y_indicator[i, y[i] + 1] <- 1  #add 1 to y[i] since indexing in R is from 1
+  }
+  
+  #calculate the class probabilities
+  exp_scores <- exp(scores) #intermediate storage of exp(scores)
+  pk <- exp_scores / (rowSums(exp_scores)) #calculate corresponding pk
+  
+  
+  # [ToDo] Calculate loss when lambda = 0 (second term in loss is not included)
+  loss = -sum(y_indicator * log(pk)) / n
   
   # [ToDo] Calculate misclassification error rate (%)
   # when predicting class labels using scores versus true y
-  # error = ...
+  #max.col for each sample gets class with highest predicted probability,-1 to get back to 0, .. K-1 indexing
+  #then check if actual class and predicted class are same (misclassification when they are not same)
+  error = 100 * mean((max.col(pk) - 1) != y) #whole number and not a decimal
+  
   
   # [ToDo] Calculate gradient of loss with respect to scores (output)
   # when lambda = 0
-  # grad = ...
+  grad = (pk - y_indicator) / n
   
   # Return loss, gradient and misclassification error on training (in %)
   return(list(loss = loss, grad = grad, error = error))
