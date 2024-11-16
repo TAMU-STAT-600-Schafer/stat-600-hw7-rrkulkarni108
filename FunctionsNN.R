@@ -67,24 +67,27 @@ loss_grad_scores <- function(y, scores, K){
 # lambda - a non-negative scalar, ridge parameter for gradient calculations
 one_pass <- function(X, y, K, W1, b1, W2, b2, lambda){
 
+  n <- length(y)
   # [To Do] Forward pass
   # From input to hidden 
-  
+  H1 <- X %*% W1 + matrix(b1, nrow = n, ncol = length(b1), byrow = TRUE)
   # ReLU
-  
+  H1[H1 < 0] <- 0 #H1 <- (abs(H1) + H1)/2 in class- this is a bit slower
   # From hidden to output scores
- 
+  scores <- H1 %*% W2 + matrix(b2, n, length(b2), byrow = TRUE)
   
   # [ToDo] Backward pass
   # Get loss, error, gradient at current scores using loss_grad_scores function
-
+  loss_grad <- loss_grad_scores(y, scores, K)
   # Get gradient for 2nd layer W2, b2 (use lambda as needed)
+  dW2 <- crossprod(H1, loss_grad$grad) + lambda * W2
+  db2 <- colSums(loss_grad$grad)
   
   # Get gradient for hidden, and 1st layer W1, b1 (use lambda as needed)
   
   # Return output (loss and error from forward pass,
   # list of gradients from backward pass)
-  return(list(loss = out$loss, error = out$error, grads = list(dW1 = dW1, db1 = db1, dW2 = dW2, db2 = db2)))
+  return(list(loss = loss_grad$loss, error = loss_grad$error, grads = list(dW1 = dW1, db1 = db1, dW2 = dW2, db2 = db2)))
 }
 
 # Function to evaluate validation set error
