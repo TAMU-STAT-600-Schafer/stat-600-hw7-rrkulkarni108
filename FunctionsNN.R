@@ -45,7 +45,7 @@ loss_grad_scores <- function(y, scores, K){
   # when predicting class labels using scores versus true y
   #max.col for each sample gets class with highest predicted probability,-1 to get back to 0, .. K-1 indexing
   #then check if actual class and predicted class are same (misclassification when they are not same)
-  error = 100 * mean((max.col(pk) - 1) != y) #whole number and not a decimal
+  error = 100 * mean((max.col(pk) - 1) != y) #whole number and not a decimal, get %error when class is not the true one
   
   
   # [ToDo] Calculate gradient of loss with respect to scores (output)
@@ -85,7 +85,7 @@ one_pass <- function(X, y, K, W1, b1, W2, b2, lambda){
   
   # Get gradient for hidden, and 1st layer W1, b1 (use lambda as needed)
   dH1 = tcrossprod(loss_grad$grad, W2)
-  dH1[H1 <= 0] <- 0  # ReLu Back propagation
+  dH1[H1 <= 0] <- 0  # ReLU Back propagation
   dW1 = crossprod(X, dH1) + lambda * W1
   db1 <- colSums(dH1)
   # Return output (loss and error from forward pass,
@@ -103,9 +103,21 @@ one_pass <- function(X, y, K, W1, b1, W2, b2, lambda){
 # b2 - a vector of size K of intercepts
 evaluate_error <- function(Xval, yval, W1, b1, W2, b2){
   # [ToDo] Forward pass to get scores on validation data
+  m <- nrow(Xval)
+  #input to hidden
+  H1 <- Xval %*% W1 + matrix(b1, m, length(b1), byrow = TRUE)
+  H1[H1 < 0] <- 0 #ReLU step
   
+  # From hidden to output scores
+  scores <- H1 %*% W2 + matrix(b2, m, length(b2), byrow = TRUE) #maybe use sweep to make faster bias comp?
   # [ToDo] Evaluate error rate (in %) when 
   # comparing scores-based predictions with true yval
+  #calculate the class probabilities
+  exp_scores <- exp(scores) #intermediate storage of exp(scores)
+  pk <- exp_scores / (rowSums(exp_scores)) #calculate corresponding pk
+  
+  preds <- max.col(probs) - 1 #assign class for prediction with highest probability
+  error <- 100 * mean(preds != yval) #get %error when class is not the true one 
   
   return(error)
 }
