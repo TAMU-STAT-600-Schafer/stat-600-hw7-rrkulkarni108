@@ -84,7 +84,10 @@ one_pass <- function(X, y, K, W1, b1, W2, b2, lambda){
   db2 <- colSums(loss_grad$grad)
   
   # Get gradient for hidden, and 1st layer W1, b1 (use lambda as needed)
-  
+  dH1 = tcrossprod(loss_grad$grad, W2)
+  dH1[H1 <= 0] <- 0  # ReLu Back propagation
+  dW1 = crossprod(X, dH1) + lambda * W1
+  db1 <- colSums(dH1)
   # Return output (loss and error from forward pass,
   # list of gradients from backward pass)
   return(list(loss = loss_grad$loss, error = loss_grad$error, grads = list(dW1 = dW1, db1 = db1, dW2 = dW2, db2 = db2)))
