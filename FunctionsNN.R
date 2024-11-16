@@ -8,7 +8,7 @@
 initialize_bw <- function(p, hidden_p, K, scale = 1e-3, seed = 12345){
   # [ToDo] Initialize intercepts as zeros
   b1 = rep(0, hidden_p) #initialize b1
-  b2 = 0                #initialize b2
+  b2 = rep(0, K)        #initialize b2
   # [ToDo] Initialize weights by drawing them iid from Normal
   # with mean zero and scale as sd
   set.seed(seed) #set the seed
