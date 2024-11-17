@@ -8,7 +8,7 @@
 # numIter - number of FIXED iterations of the algorithm, default value is 50
 # eta - learning rate, default value is 0.1
 # lambda - ridge parameter, default value is 1
-# beta_init - (optional) initial starting values of beta for the algorithm, should be p x K matrix 
+# beta_init - (optional) initial starting values of beta for the algorithm, should be p x K matrix
 
 ## Return output
 ##########################################################################
@@ -16,7 +16,14 @@
 # error_train - (numIter + 1) length vector of training error % at each iteration (+ starting value)
 # error_test - (numIter + 1) length vector of testing error % at each iteration (+ starting value)
 # objective - (numIter + 1) length vector of objective values of the function that we are minimizing at each iteration (+ starting value)
-LRMultiClass <- function(X, y, Xt, yt, numIter = 50, eta = 0.1, lambda = 1, beta_init = NULL){
+LRMultiClass <- function(X,
+                         y,
+                         Xt,
+                         yt,
+                         numIter = 50,
+                         eta = 0.1,
+                         lambda = 1,
+                         beta_init = NULL) {
   ## Check the supplied parameters as described. You can assume that X, Xt are matrices; y, yt are vectors; and numIter, eta, lambda are scalars. You can assume that beta_init is either NULL (default) or a matrix.
   ###################################
   # Check that the first column of X is 1s, if not - display appropriate message and stop execution.
@@ -93,7 +100,7 @@ LRMultiClass <- function(X, y, Xt, yt, numIter = 50, eta = 0.1, lambda = 1, beta
   objective[1] <-   (-sum(ind_train * log(pk)) + (lambda / 2) * sum(beta_init ^
                                                                       2))
   # print(-sum(ind_train * log(pk)))
-  # print(class(-sum(ind_train * log(pk))))  
+  # print(class(-sum(ind_train * log(pk))))
   ## Newton's method cycle - implement the update EXACTLY numIter iterations
   ##########################################################################
   for (k in 1:numIter) {
@@ -132,7 +139,7 @@ LRMultiClass <- function(X, y, Xt, yt, numIter = 50, eta = 0.1, lambda = 1, beta
                                                                             2))
     # print(k)
     # print(objective[k + 1])
-  } 
+  }
   # Within one iteration: perform the update, calculate updated objective function and training/testing errors in %
   
   
