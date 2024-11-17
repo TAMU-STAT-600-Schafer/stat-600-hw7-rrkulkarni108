@@ -168,8 +168,8 @@ NN_train <- function(X, y, Xval, yval, lambda = 0.01,
       #  - do one_pass to determine current error and gradients
       # Get loss and gradient on the batch
        
-      X_j <- X[which(batch_ids == j), ]
-      y_j <- y[which(batch_ids == j)] #extract value using index
+      X_j <- X[which(batchids == j), ]
+      y_j <- y[which(batchids == j)] #extract value using index
       pass = one_pass(X_j, y_j,length(unique(y)), W1, b1, W2, b2, lambda) #calculate one_pass to determine current error and gradients
       
       #update the weights
