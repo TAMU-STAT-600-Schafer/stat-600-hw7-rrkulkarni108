@@ -24,6 +24,16 @@ LRMultiClass <- function(X,
                          eta = 0.1,
                          lambda = 1,
                          beta_init = NULL) {
+  
+  n <- nrow(X) # save variable of nrows as n, number of observations
+  p <- ncol(X) # save variable of ncols as p, number of predictors
+  ntest <- nrow(Xt) # save variable of nrows of Xtest as ntest (num obs of Xtest)
+  K <- length(unique(y)) #number of class labels
+  #print(K)
+  tX <- t(X) # compute transpose of X once to be accessed
+  X <- as.matrix(X)
+  
+  
   ## Check the supplied parameters as described. You can assume that X, Xt are matrices; y, yt are vectors; and numIter, eta, lambda are scalars. You can assume that beta_init is either NULL (default) or a matrix.
   ###################################
   # Check that the first column of X is 1s, if not - display appropriate message and stop execution.
