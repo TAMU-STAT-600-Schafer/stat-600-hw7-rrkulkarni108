@@ -5,7 +5,11 @@
 # K - number of classes, dimension of output layer
 # scale - magnitude for initialization of W_k (standard deviation of normal)
 # seed - specified seed to use before random normal draws
-initialize_bw <- function(p, hidden_p, K, scale = 1e-3, seed = 12345){
+initialize_bw <- function(p,
+                          hidden_p,
+                          K,
+                          scale = 1e-3,
+                          seed = 12345) {
   # [ToDo] Initialize intercepts as zeros
   b1 = rep(0, hidden_p) #initialize b1
   b2 = rep(0, K)        #initialize b2
@@ -15,7 +19,12 @@ initialize_bw <- function(p, hidden_p, K, scale = 1e-3, seed = 12345){
   W1 <- scale * matrix(rnorm(p * hidden_p), nrow = p, ncol = hidden_p) #initialize weights1
   W2 <- scale * matrix(rnorm(hidden_p * K), nrow = hidden_p, ncol = K) #initialize weights2
   # Return
-  return(list(b1 = b1, b2 = b2, W1 = W1, W2 = W2))
+  return(list(
+    b1 = b1,
+    b2 = b2,
+    W1 = W1,
+    W2 = W2
+  ))
 }
 
 # Function to calculate loss, error, and gradient strictly based on scores
@@ -24,8 +33,7 @@ initialize_bw <- function(p, hidden_p, K, scale = 1e-3, seed = 12345){
 # scores - a matrix of size n by K of scores (output layer)
 # y - a vector of size n of class labels, from 0 to K-1
 # K - number of classes
-loss_grad_scores <- function(y, scores, K){
-  
+loss_grad_scores <- function(y, scores, K) {
   # y is indicator matrix of class labels
   n <- length(y)
   y_indicator <- matrix(0, nrow = n, ncol = K)
@@ -53,7 +61,11 @@ loss_grad_scores <- function(y, scores, K){
   grad = (pk - y_indicator) / n
   
   # Return loss, gradient and misclassification error on training (in %)
-  return(list(loss = loss, grad = grad, error = error))
+  return(list(
+    loss = loss,
+    grad = grad,
+    error = error
+  ))
 }
 
 # One pass function
@@ -65,12 +77,14 @@ loss_grad_scores <- function(y, scores, K){
 # W2 - a h by K matrix of weights
 # b2 - a vector of size K of intercepts
 # lambda - a non-negative scalar, ridge parameter for gradient calculations
-one_pass <- function(X, y, K, W1, b1, W2, b2, lambda){
-
+one_pass <- function(X, y, K, W1, b1, W2, b2, lambda) {
   n <- length(y)
   # [To Do] Forward pass
-  # From input to hidden 
-  H1 <- X %*% W1 + matrix(b1, nrow = n, ncol = length(b1), byrow = TRUE)
+  # From input to hidden
+  H1 <- X %*% W1 + matrix(b1,
+                          nrow = n,
+                          ncol = length(b1),
+                          byrow = TRUE)
   # ReLU
   H1[H1 < 0] <- 0 #H1 <- (abs(H1) + H1)/2 in class- this is a bit slower
   # From hidden to output scores
@@ -90,7 +104,16 @@ one_pass <- function(X, y, K, W1, b1, W2, b2, lambda){
   db1 <- colSums(dH1)
   # Return output (loss and error from forward pass,
   # list of gradients from backward pass)
-  return(list(loss = loss_grad$loss, error = loss_grad$error, grads = list(dW1 = dW1, db1 = db1, dW2 = dW2, db2 = db2)))
+  return(list(
+    loss = loss_grad$loss,
+    error = loss_grad$error,
+    grads = list(
+      dW1 = dW1,
+      db1 = db1,
+      dW2 = dW2,
+      db2 = db2
+    )
+  ))
 }
 
 # Function to evaluate validation set error
@@ -101,7 +124,7 @@ one_pass <- function(X, y, K, W1, b1, W2, b2, lambda){
 # b1 - a vector of size h of intercepts
 # W2 - a h by K matrix of weights
 # b2 - a vector of size K of intercepts
-evaluate_error <- function(Xval, yval, W1, b1, W2, b2){
+evaluate_error <- function(Xval, yval, W1, b1, W2, b2) {
   # [ToDo] Forward pass to get scores on validation data
   m <- nrow(Xval)
   #input to hidden
@@ -110,14 +133,14 @@ evaluate_error <- function(Xval, yval, W1, b1, W2, b2){
   
   # From hidden to output scores
   scores <- H1 %*% W2 + matrix(b2, m, length(b2), byrow = TRUE) #maybe use sweep to make faster bias comp?
-  # [ToDo] Evaluate error rate (in %) when 
+  # [ToDo] Evaluate error rate (in %) when
   # comparing scores-based predictions with true yval
   #calculate the class probabilities
   exp_scores <- exp(scores) #intermediate storage of exp(scores)
   pk <- exp_scores / (rowSums(exp_scores)) #calculate corresponding pk
   
-  preds <- max.col(probs) - 1 #assign class for prediction with highest probability
-  error <- 100 * mean(preds != yval) #get %error when class is not the true one 
+  preds <- max.col(pk) - 1 #assign class for prediction with highest probability
+  error <- 100 * mean(preds != yval) #get %error when class is not the true one
   
   return(error)
 }
@@ -136,21 +159,33 @@ evaluate_error <- function(Xval, yval, W1, b1, W2, b2){
 # hidden_p - size of hidden layer
 # scale - a scalar for weights initialization
 # seed - for reproducibility of SGD and initialization
-NN_train <- function(X, y, Xval, yval, lambda = 0.01,
-                     rate = 0.01, mbatch = 20, nEpoch = 100,
-                     hidden_p = 20, scale = 1e-3, seed = 12345){
+NN_train <- function(X,
+                     y,
+                     Xval,
+                     yval,
+                     lambda = 0.01,
+                     rate = 0.01,
+                     mbatch = 20,
+                     nEpoch = 100,
+                     hidden_p = 20,
+                     scale = 1e-3,
+                     seed = 12345) {
   # Get sample size and total number of batches
   n = length(y)
-  nBatch = floor(n/mbatch)
-
+  nBatch = floor(n / mbatch)
+  
   # [ToDo] Initialize b1, b2, W1, W2 using initialize_bw with seed as seed,
   # and determine any necessary inputs from supplied ones
-  init <- initialize_bw(ncol(X), hidden_p, length(unique(y)), scale = scale, seed = seed) #K = length(unique(y))
+  init <- initialize_bw(ncol(X),
+                        hidden_p,
+                        length(unique(y)),
+                        scale = scale,
+                        seed = seed) #K = length(unique(y))
   b1 <- init$b1
   b2 <- init$b2
   W1 <- init$W1
   W2 <- init$W2
- 
+  
   
   # Initialize storage for error to monitor convergence
   error = rep(NA, nEpoch)
@@ -159,18 +194,18 @@ NN_train <- function(X, y, Xval, yval, lambda = 0.01,
   # Set seed for reproducibility
   set.seed(seed)
   # Start iterations
-  for (i in 1:nEpoch){
+  for (i in 1:nEpoch) {
     # Allocate batches
     batchids = sample(rep(1:nBatch, length.out = n), size = n)
     # [ToDo] For each batch
     #  - perform SGD step to update the weights and intercepts
-    for (j in 1:nBatch){
+    for (j in 1:nBatch) {
       #  - do one_pass to determine current error and gradients
       # Get loss and gradient on the batch
-       
+      
       X_j <- X[which(batchids == j), ]
       y_j <- y[which(batchids == j)] #extract value using index
-      pass = one_pass(X_j, y_j,length(unique(y)), W1, b1, W2, b2, lambda) #calculate one_pass to determine current error and gradients
+      pass = one_pass(X_j, y_j, length(unique(y)), W1, b1, W2, b2, lambda) #calculate one_pass to determine current error and gradients
       
       #update the weights
       W1 <- W1 - rate * pass$grads$dW1
@@ -185,5 +220,14 @@ NN_train <- function(X, y, Xval, yval, lambda = 0.01,
     error_val[i] <- evaluate_error(Xval, yval, W1, b1, W2, b2)
   }
   # Return end result
-  return(list(error = error, error_val = error_val, params =  list(W1 = W1, b1 = b1, W2 = W2, b2 = b2)))
+  return(list(
+    error = error,
+    error_val = error_val,
+    params =  list(
+      W1 = W1,
+      b1 = b1,
+      W2 = W2,
+      b2 = b2
+    )
+  ))
 }
