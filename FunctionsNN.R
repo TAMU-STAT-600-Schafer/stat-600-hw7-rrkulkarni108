@@ -160,12 +160,24 @@ NN_train <- function(X, y, Xval, yval, lambda = 0.01,
   set.seed(seed)
   # Start iterations
   for (i in 1:nEpoch){
-    # Allocate bathes
+    # Allocate batches
     batchids = sample(rep(1:nBatch, length.out = n), size = n)
     # [ToDo] For each batch
-    #  - do one_pass to determine current error and gradients
     #  - perform SGD step to update the weights and intercepts
-    
+    for (j in 1:nBatch){
+      #  - do one_pass to determine current error and gradients
+      # Get loss and gradient on the batch
+       
+      X_j <- X[which(batch_ids == j), ]
+      y_j <- y[which(batch_ids == j)] #extract value using index
+      pass = one_pass(X_j, y_j,length(unique(y)), W1, b1, W2, b2, lambda) #calculate one_pass to determine current error and gradients
+      
+      #update the weights
+      W1 <- W1 - rate * pass$grads$dW1
+      b1 <- b1 - rate * pass$grads$db1
+      W2 <- W2 - rate * pass$grads$dW2
+      b2 <- b2 - rate * pass$grads$db2
+    }
     # [ToDo] In the end of epoch, evaluate
     # - average training error across batches
     # - validation error using evaluate_error function
