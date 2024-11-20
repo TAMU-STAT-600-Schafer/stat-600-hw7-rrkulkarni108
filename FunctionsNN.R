@@ -218,6 +218,7 @@ NN_train <- function(X,
     error[i] <- evaluate_error(X, y, W1, b1, W2, b2)
     # - validation error using evaluate_error function
     error_val[i] <- evaluate_error(Xval, yval, W1, b1, W2, b2)
+    cat("Epoch", i, ": Training Error =", error[i], "%, Validation Error =", error_val[i], "%\n")
   }
   # Return end result
   return(list(
