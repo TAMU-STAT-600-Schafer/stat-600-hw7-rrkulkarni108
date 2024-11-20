@@ -11,8 +11,8 @@ initialize_bw <- function(p,
                           scale = 1e-3,
                           seed = 12345) {
   # [ToDo] Initialize intercepts as zeros
-  b1 = rep(0, hidden_p) #initialize b1
-  b2 = rep(0, K)        #initialize b2
+  b1 = rep(0, hidden_p) #initialize b1 as 0
+  b2 = rep(0, K)        #initialize b2 as 0
   # [ToDo] Initialize weights by drawing them iid from Normal
   # with mean zero and scale as sd
   set.seed(seed) #set the seed
@@ -34,6 +34,11 @@ initialize_bw <- function(p,
 # y - a vector of size n of class labels, from 0 to K-1
 # K - number of classes
 loss_grad_scores <- function(y, scores, K) {
+  
+  #initialize inputs 
+  y <- as.vector(y)
+  K <- as.numeric(K)
+  scores <- as.matrix(scores)
   # y is indicator matrix of class labels
   n <- length(y)
   y_indicator <- matrix(0, nrow = n, ncol = K)
@@ -78,7 +83,11 @@ loss_grad_scores <- function(y, scores, K) {
 # b2 - a vector of size K of intercepts
 # lambda - a non-negative scalar, ridge parameter for gradient calculations
 one_pass <- function(X, y, K, W1, b1, W2, b2, lambda) {
+  #initialize inputs 
+  X <- as.matrix(X)
+  y <- as.vector(y)
   n <- length(y)
+  
   # [To Do] Forward pass
   # From input to hidden
   H1 <- X %*% W1 + matrix(b1,
@@ -92,16 +101,16 @@ one_pass <- function(X, y, K, W1, b1, W2, b2, lambda) {
   
   # [ToDo] Backward pass
   # Get loss, error, gradient at current scores using loss_grad_scores function
-  loss_grad <- loss_grad_scores(y, scores, K)
+  loss_grad <- loss_grad_scores(y = y, scores = scores, K = K)
   # Get gradient for 2nd layer W2, b2 (use lambda as needed)
-  dW2 <- crossprod(H1, loss_grad$grad) + lambda * W2
-  db2 <- colSums(loss_grad$grad)
+  dW2 <- crossprod(H1, loss_grad$grad) + lambda * W2 #deriv of W2
+  db2 <- as.vector(colSums(loss_grad$grad)) #deriv of b2
   
   # Get gradient for hidden, and 1st layer W1, b1 (use lambda as needed)
-  dH1 = tcrossprod(loss_grad$grad, W2)
+  dH1 = tcrossprod(loss_grad$grad, W2) #deriv of H1
   dH1[H1 <= 0] <- 0  # ReLU Back propagation
-  dW1 = crossprod(X, dH1) + lambda * W1
-  db1 <- colSums(dH1)
+  dW1 = crossprod(X, dH1) + lambda * W1 #deriv of W1
+  db1 <- colSums(dH1) #deriv of b1
   # Return output (loss and error from forward pass,
   # list of gradients from backward pass)
   return(list(
@@ -127,6 +136,7 @@ one_pass <- function(X, y, K, W1, b1, W2, b2, lambda) {
 evaluate_error <- function(Xval, yval, W1, b1, W2, b2) {
   # [ToDo] Forward pass to get scores on validation data
   m <- nrow(Xval)
+  
   #input to hidden
   H1 <- Xval %*% W1 + matrix(b1, m, length(b1), byrow = TRUE)
   H1[H1 < 0] <- 0 #ReLU step
@@ -171,14 +181,15 @@ NN_train <- function(X,
                      scale = 1e-3,
                      seed = 12345) {
   # Get sample size and total number of batches
-  n = length(y)
-  nBatch = floor(n / mbatch)
+  n <-  length(y)
+  nBatch <-  floor(n / mbatch)
+  K <- length(unique(y))  # Precompute
   
   # [ToDo] Initialize b1, b2, W1, W2 using initialize_bw with seed as seed,
   # and determine any necessary inputs from supplied ones
-  init <- initialize_bw(ncol(X),
-                        hidden_p,
-                        length(unique(y)),
+  init <- initialize_bw(p = ncol(X),
+                        hidden_p = hidden_p,
+                        K = K,
                         scale = scale,
                         seed = seed) #K = length(unique(y))
   b1 <- init$b1
@@ -196,16 +207,19 @@ NN_train <- function(X,
   # Start iterations
   for (i in 1:nEpoch) {
     # Allocate batches
-    batchids = sample(rep(1:nBatch, length.out = n), size = n)
+    batchids = sample(rep(1:nBatch, length.out = n), size = n) #get batchids through sample
     # [ToDo] For each batch
     #  - perform SGD step to update the weights and intercepts
+    curr_err <- 0 
     for (j in 1:nBatch) {
       #  - do one_pass to determine current error and gradients
       # Get loss and gradient on the batch
       
       X_j <- X[which(batchids == j), ]
       y_j <- y[which(batchids == j)] #extract value using index
-      pass = one_pass(X_j, y_j, length(unique(y)), W1, b1, W2, b2, lambda) #calculate one_pass to determine current error and gradients
+      pass = one_pass(X = X_j, y = y_j, K = K, W1 = W1, b1 = b1, W2 = W2, b2 = b2, lambda =lambda) #calculate one_pass to determine current error and gradients
+      
+      curr_err <- curr_err + pass$loss
       
       #update the weights
       W1 <- W1 - rate * pass$grads$dW1
@@ -215,7 +229,7 @@ NN_train <- function(X,
     }
     # [ToDo] In the end of epoch, evaluate
     # - average training error across batches
-    error[i] <- evaluate_error(X, y, W1, b1, W2, b2)
+    error[i] <- evaluate_error(X, y, W1, b1, W2, b2)#curr_err / nBatch #evaluate_error(X, y, W1, b1, W2, b2)
     # - validation error using evaluate_error function
     error_val[i] <- evaluate_error(Xval, yval, W1, b1, W2, b2)
     cat("Epoch", i, ": Training Error =", error[i], "%, Validation Error =", error_val[i], "%\n")
