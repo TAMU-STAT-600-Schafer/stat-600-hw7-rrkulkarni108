@@ -104,10 +104,9 @@ evaluate_error(Xt, Yt, out3$params$W1, out3$params$b1, out3$params$W2, out3$para
 library(microbenchmark)
 result <- microbenchmark(
   LRMultiClass(Xinter, Ytrain, Xtinter, Yt, lambda = 1, numIter = 150, eta = 0.1),
-  NN_train(Xtrain, Ytrain, Xval, Yval, 
-           lambda = 0.001, rate = 0.1, 
-           hidden_p = 200, mbatch = 50, 
-           nEpoch = 150, scale = 1e-3, seed = 12345),
+  NN_train(Xtrain, Ytrain, Xval, Yval, lambda = 0.001,
+           rate = 0.1, mbatch = 50, nEpoch = 150,
+           hidden_p = 100, scale = 1e-3, seed = 12345),
   times = 5
 )
 print(result)
