@@ -41,9 +41,10 @@ loss_grad_scores <- function(y, scores, K) {
   # y is indicator matrix of class labels
   n <- length(y)
   y_indicator <- matrix(0, nrow = n, ncol = K)
-  for (i in 1:n) {
-    y_indicator[i, y[i] + 1] <- 1  #add 1 to y[i] since indexing in R is from 1
-  }
+  # for (i in 1:n) {
+  #   y_indicator[i, y[i] + 1] <- 1  #add 1 to y[i] since indexing in R is from 1
+  # }
+  y_indicator[cbind(1:n, y + 1)] <- 1
   
   #calculate the class probabilities
   exp_scores <- exp(scores) #intermediate storage of exp(scores)
@@ -57,7 +58,8 @@ loss_grad_scores <- function(y, scores, K) {
   # when predicting class labels using scores versus true y
   #max.col for each sample gets class with highest predicted probability,-1 to get back to 0, .. K-1 indexing
   #then check if actual class and predicted class are same (misclassification when they are not same)
-  error = 100 * mean((max.col(pk) - 1) != y) #whole number and not a decimal, get %error when class is not the true one
+  preds <- max.col(pk, ties.method = "first") - 1
+  error = 100 * mean( preds != y) #whole number and not a decimal, get %error when class is not the true one
   
   
   # [ToDo] Calculate gradient of loss with respect to scores (output)
@@ -148,7 +150,7 @@ evaluate_error <- function(Xval, yval, W1, b1, W2, b2) {
   exp_scores <- exp(scores) #intermediate storage of exp(scores)
   pk <- exp_scores / (rowSums(exp_scores)) #calculate corresponding pk
   
-  preds <- max.col(pk) - 1 #assign class for prediction with highest probability
+  preds <- max.col(pk, ties.method = "first") - 1 #assign class for prediction with highest probability
   error <- 100 * mean(preds != yval) #get %error when class is not the true one
   
   return(error)
@@ -216,11 +218,12 @@ NN_train <- function(X,
       #  - do one_pass to determine current error and gradients
       # Get loss and gradient on the batch
       
-      X_j <- X[which(batchids == j), ]
-      y_j <- y[which(batchids == j)] #extract value using index
+      idx  <- which(batchids == j) # get the indices for batch j
+      #X_j <- X[idx, ]
+      #y_j <- y[idx] #extract value using index
       pass = one_pass(
-        X = X_j,
-        y = y_j,
+        X = X[idx,  , drop = FALSE ],
+        y = y[idx],
         K = K,
         W1 = W1,
         b1 = b1,
