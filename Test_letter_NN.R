@@ -45,14 +45,14 @@ lines(1:length(out2$error_val), out2$error_val, col = "red")
 
 # Evaluate error on testing data
 test_error = evaluate_error(Xt, Yt, out2$params$W1, out2$params$b1, out2$params$W2, out2$params$b2)
-test_error # 16.19444
+test_error # 16.19444 , 15.68333 most recent
 
 # [ToDo] Try changing the parameters above to obtain a better performance,
 # this will likely take several trials
 
 # Evaluate error on training data
 train_error = evaluate_error(Xtrain, Ytrain, out2$params$W1, out2$params$b1, out2$params$W2, out2$params$b2)
-train_error # 4.611111
+train_error # 5.055556
 
 
 #grid search to find the best hyperparameter values for lambda, rate, and hidden_p
@@ -100,6 +100,10 @@ evaluate_error(Xt, Yt, out3$params$W1, out3$params$b1, out3$params$W2, out3$para
 
 
 #test the time
+library(profvis)
+profvis(NN_train(Xtrain, Ytrain, Xval, Yval, lambda = 0.001,
+                 rate = 0.1, mbatch = 50, nEpoch = 150,
+                 hidden_p = 100, scale = 1e-3, seed = 12345))
 
 library(microbenchmark)
 result <- microbenchmark(
@@ -109,4 +113,4 @@ result <- microbenchmark(
            hidden_p = 100, scale = 1e-3, seed = 12345),
   times = 5
 )
-print(result)
+print(result) #median tim = 4.362971
