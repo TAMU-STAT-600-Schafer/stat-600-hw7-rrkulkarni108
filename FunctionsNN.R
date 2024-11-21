@@ -232,7 +232,7 @@ NN_train <- function(X,
         lambda = lambda
       ) #calculate one_pass to determine current error and gradients
       
-      curr_err <- curr_err + pass$loss
+      curr_err <- curr_err + pass$error
       
       #update the weights
       W1 <- W1 - rate * pass$grads$dW1
@@ -242,7 +242,7 @@ NN_train <- function(X,
     }
     # [ToDo] In the end of epoch, evaluate
     # - average training error across batches
-    error[i] <- evaluate_error(X, y, W1, b1, W2, b2)#curr_err / nBatch #evaluate_error(X, y, W1, b1, W2, b2)
+    error[i] <- curr_err / nBatch #evaluate_error(X, y, W1, b1, W2, b2)#curr_err / nBatch #evaluate_error(X, y, W1, b1, W2, b2)
     # - validation error using evaluate_error function
     error_val[i] <- evaluate_error(Xval, yval, W1, b1, W2, b2)
     cat("Epoch",
