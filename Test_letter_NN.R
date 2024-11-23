@@ -225,4 +225,4 @@ result <- microbenchmark(
   ),
   times = 5
 )
-print(result) #median time = 4.362971
+print(result) #median time = 4.362971, most recent 3.967134  
