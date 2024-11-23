@@ -80,11 +80,11 @@ test_error # 16.19444 , 15.68333 most recent
 # Evaluate error on training data
 out2$error #last value is 6.333333
 evaluate_error(Xtrain,
-                             Ytrain,
-                             out2$params$W1,
-                             out2$params$b1,
-                             out2$params$W2,
-                             out2$params$b2)  # 5.055556
+               Ytrain,
+               out2$params$W1,
+               out2$params$b1,
+               out2$params$W2,
+               out2$params$b2)  # 5.055556
 
 
 #grid search to find the best hyperparameter values for lambda, rate, and hidden_p
@@ -171,12 +171,12 @@ out4 = NN_train(
   seed = 12345
 )
 test_error4 = evaluate_error(Xt,
-                              Yt,
-                              out4$params$W1,
-                              out4$params$b1,
-                              out4$params$W2,
-                              out4$params$b2)
-test_error4 #13.44444 
+                             Yt,
+                             out4$params$W1,
+                             out4$params$b1,
+                             out4$params$W2,
+                             out4$params$b2)
+test_error4 #13.44444
 
 plot(1:length(out4$error), out4$error, ylim = c(0, 70))
 lines(1:length(out4$error_val), out4$error_val, col = "blue")
