@@ -78,13 +78,13 @@ test_error # 16.19444 , 15.68333 most recent
 # this will likely take several trials
 
 # Evaluate error on training data
-train_error = evaluate_error(Xtrain,
+out2$error #last value is 6.333333
+evaluate_error(Xtrain,
                              Ytrain,
                              out2$params$W1,
                              out2$params$b1,
                              out2$params$W2,
-                             out2$params$b2)
-train_error # 5.055556
+                             out2$params$b2)  # 5.055556
 
 
 #grid search to find the best hyperparameter values for lambda, rate, and hidden_p
@@ -155,6 +155,31 @@ evaluate_error(Xt,
 # 14.56667
 
 
+
+#change hidden_p = 1000
+out4 = NN_train(
+  Xtrain,
+  Ytrain,
+  Xval,
+  Yval,
+  lambda = 0.001,
+  rate = 0.1,
+  mbatch = 50,
+  nEpoch = 150,
+  hidden_p = 1000,
+  scale = 1e-3,
+  seed = 12345
+)
+test_error4 = evaluate_error(Xt,
+                              Yt,
+                              out4$params$W1,
+                              out4$params$b1,
+                              out4$params$W2,
+                              out4$params$b2)
+test_error4 #13.44444 
+
+plot(1:length(out4$error), out4$error, ylim = c(0, 70))
+lines(1:length(out4$error_val), out4$error_val, col = "blue")
 
 #test the time
 library(profvis)
