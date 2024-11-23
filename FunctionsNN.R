@@ -39,12 +39,12 @@ loss_grad_scores <- function(y, scores, K) {
   K <- as.numeric(K)
   scores <- as.matrix(scores)
   # y is indicator matrix of class labels
-  n <- length(y)
-  y_indicator <- matrix(0, nrow = n, ncol = K)
+  n <- length(y) #size n of class labels
+  y_indicator <- matrix(0, nrow = n, ncol = K) #initialize matrix
   # for (i in 1:n) {
   #   y_indicator[i, y[i] + 1] <- 1  #add 1 to y[i] since indexing in R is from 1
   # }
-  y_indicator[cbind(1:n, y + 1)] <- 1
+  y_indicator[cbind(1:n, y + 1)] <- 1 #vectorized version
   
   #calculate the class probabilities
   exp_scores <- exp(scores) #intermediate storage of exp(scores)
@@ -52,19 +52,19 @@ loss_grad_scores <- function(y, scores, K) {
   
   
   # [ToDo] Calculate loss when lambda = 0 (second term in loss is not included)
-  loss = -sum(y_indicator * log(pk)) / n
+  loss = -sum(y_indicator * log(pk)) / n #similar to in lecture
   
   # [ToDo] Calculate misclassification error rate (%)
   # when predicting class labels using scores versus true y
   #max.col for each sample gets class with highest predicted probability,-1 to get back to 0, .. K-1 indexing
   #then check if actual class and predicted class are same (misclassification when they are not same)
-  preds <- max.col(pk, ties.method = "first") - 1
-  error = 100 * mean( preds != y) #whole number and not a decimal, get %error when class is not the true one
+  preds <- max.col(pk, ties.method = "first") - 1 #ties/method = first reduces test error
+  error = 100 * mean(preds != y) #whole number and not a decimal, get %error when class is not the true one
   
   
   # [ToDo] Calculate gradient of loss with respect to scores (output)
   # when lambda = 0
-  grad = (pk - y_indicator) / n
+  grad = (pk - y_indicator) / n #gradient when lambda equal to zero, derived
   
   # Return loss, gradient and misclassification error on training (in %)
   return(list(
@@ -94,23 +94,23 @@ one_pass <- function(X, y, K, W1, b1, W2, b2, lambda) {
   H1 <- X %*% W1 + matrix(b1,
                           nrow = n,
                           ncol = length(b1),
-                          byrow = TRUE)
+                          byrow = TRUE) # add a matrix and not just b1
   # ReLU
   H1[H1 < 0] <- 0 #H1 <- (abs(H1) + H1)/2 in class- this is a bit slower
   # From hidden to output scores
-  scores <- H1 %*% W2 + matrix(b2, n, length(b2), byrow = TRUE)
+  scores <- H1 %*% W2 + matrix(b2, n, length(b2), byrow = TRUE) #add a matrix and not just b2
   
   # [ToDo] Backward pass
   # Get loss, error, gradient at current scores using loss_grad_scores function
   loss_grad <- loss_grad_scores(y = y, scores = scores, K = K)
   # Get gradient for 2nd layer W2, b2 (use lambda as needed)
-  dW2 <- crossprod(H1, loss_grad$grad) + lambda * W2 #deriv of W2
+  dW2 <- crossprod(H1, loss_grad$grad) + lambda * W2 #deriv of W2, use crossprod for faster runtime
   db2 <- as.vector(colSums(loss_grad$grad)) #deriv of b2
   
   # Get gradient for hidden, and 1st layer W1, b1 (use lambda as needed)
-  dH1 = tcrossprod(loss_grad$grad, W2) #deriv of H1
+  dH1 = tcrossprod(loss_grad$grad, W2) #deriv of H1, use tcrossprod for faster runtime
   dH1[H1 <= 0] <- 0  # ReLU Back propagation
-  dW1 = crossprod(X, dH1) + lambda * W1 #deriv of W1
+  dW1 = crossprod(X, dH1) + lambda * W1 #deriv of W1, use crossprod for faster runtime
   db1 <- colSums(dH1) #deriv of b1
   # Return output (loss and error from forward pass,
   # list of gradients from backward pass)
@@ -136,14 +136,14 @@ one_pass <- function(X, y, K, W1, b1, W2, b2, lambda) {
 # b2 - a vector of size K of intercepts
 evaluate_error <- function(Xval, yval, W1, b1, W2, b2) {
   # [ToDo] Forward pass to get scores on validation data
-  m <- nrow(Xval)
+  m <- nrow(Xval) #get m = nval rows of X (y is also of size nval)
   
-  #input to hidden
+  #from input to hidden
   H1 <- Xval %*% W1 + matrix(b1, m, length(b1), byrow = TRUE)
   H1[H1 < 0] <- 0 #ReLU step
   
   # From hidden to output scores
-  scores <- H1 %*% W2 + matrix(b2, m, length(b2), byrow = TRUE) #maybe use sweep to make faster bias comp?
+  scores <- H1 %*% W2 + matrix(b2, m, length(b2), byrow = TRUE) #maybe use sweep to make faster comp?
   # [ToDo] Evaluate error rate (in %) when
   # comparing scores-based predictions with true yval
   #calculate the class probabilities
@@ -153,7 +153,7 @@ evaluate_error <- function(Xval, yval, W1, b1, W2, b2) {
   preds <- max.col(pk, ties.method = "first") - 1 #assign class for prediction with highest probability
   error <- 100 * mean(preds != yval) #get %error when class is not the true one
   
-  return(error)
+  return(error) #return the error
 }
 
 
@@ -213,7 +213,7 @@ NN_train <- function(X,
     batchids = sample(rep(1:nBatch, length.out = n), size = n) #get batchids through sample
     # [ToDo] For each batch
     #  - perform SGD step to update the weights and intercepts
-    curr_err <- 0
+    curr_err <- 0 #initialize the error before loop
     for (j in 1:nBatch) {
       #  - do one_pass to determine current error and gradients
       # Get loss and gradient on the batch
@@ -222,7 +222,7 @@ NN_train <- function(X,
       #X_j <- X[idx, ]
       #y_j <- y[idx] #extract value using index
       pass = one_pass(
-        X = X[idx,  , drop = FALSE ],
+        X = X[idx, , drop = FALSE],
         y = y[idx],
         K = K,
         W1 = W1,
@@ -232,7 +232,7 @@ NN_train <- function(X,
         lambda = lambda
       ) #calculate one_pass to determine current error and gradients
       
-      curr_err <- curr_err + pass$error
+      curr_err <- curr_err + pass$error # for each iteration accumulate the error
       
       #update the weights
       W1 <- W1 - rate * pass$grads$dW1
@@ -245,13 +245,13 @@ NN_train <- function(X,
     error[i] <- curr_err / nBatch #evaluate_error(X, y, W1, b1, W2, b2)#curr_err / nBatch #evaluate_error(X, y, W1, b1, W2, b2)
     # - validation error using evaluate_error function
     error_val[i] <- evaluate_error(Xval, yval, W1, b1, W2, b2)
-    cat("Epoch",
-        i,
-        ": Training Error =",
-        error[i],
-        "%, Validation Error =",
-        error_val[i],
-        "%\n")
+    # cat("Epoch",
+    #     i,
+    #     ": Training Error =",
+    #     error[i],
+    #     "%, Validation Error =",
+    #     error_val[i],
+    #     "%\n") - UNCOMMENT THIS SECTION FOR CHECKING EACH EPOCH
   }
   # Return end result
   return(list(
